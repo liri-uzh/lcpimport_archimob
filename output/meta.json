@@ -1,0 +1,317 @@
+{
+	"meta": {
+		"name": "ArchiMob Release 2 (2019) (Version 1.0.0)",
+		"author": "Scherrer, Y., Samardzic, T., & Glaser, E.",
+		"url": "https://doi.org/10.48656/496p-3w34",
+		"date": "2023",
+		"version": 1,
+		"corpusDescription": "The ArchiMob corpus represents German linguistic varieties spoken within the territory of Switzerland. This corpus is the first electronic resource containing long samples of transcribed text in Swiss German, intended for studying the spatial distribution of morphosyntactic features and for natural language processing."
+	},
+	"firstClass": {
+		"document": "Document",
+		"segment": "Segment",
+		"token": "Token"
+	},
+	"layer": {
+		"Token": {
+			"abstract": false,
+			"layerType": "unit",
+			"anchoring": {
+				"location": false,
+				"stream": true,
+				"time": false
+			},
+			"attributes": {
+				"form": {
+					"isGlobal": false,
+					"type": "text",
+					"nullable": false
+				},
+				"lemma": {
+					"isGlobal": false,
+					"type": "text",
+					"nullable": false
+				},
+				"xpos": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"VVINF",
+						"PTKNEG",
+						"ADJD",
+						"KON",
+						"APPRART",
+						"NN",
+						"PPER",
+						"ADV",
+						"VAFIN",
+						"PDS",
+						"CARD",
+						"VVFIN",
+						"NE",
+						"VVPP",
+						"VMFIN",
+						"APPR",
+						"PDAT",
+						"ART",
+						"ADJA",
+						"VAPP",
+						"PRELS",
+						"APZR",
+						"PRF",
+						"ITJ",
+						"PAV",
+						"KOUS",
+						"VMINF",
+						"PWS",
+						"PTKANT",
+						"PIS",
+						"PPOSAT",
+						"PTKZU",
+						"PTKVZ",
+						"PWAT",
+						"VAINF",
+						"VAFIN+",
+						"KOUS+",
+						"PIAT",
+						"ADV+",
+						"KOKOM",
+						"PTKINF",
+						"VMPP",
+						"CARD+",
+						"PWAV",
+						"PTKA",
+						"XY",
+						"VVIZU",
+						"KOUI+",
+						"VVFIN+",
+						"PRELS+",
+						"VMFIN+",
+						"PDS+",
+						"PIS+",
+						"ART+",
+						"PIAT+",
+						"APPR+",
+						"PPER+",
+						"TRUNC",
+						"PPOSS",
+						"ADJA+",
+						"PWS+",
+						"VVIMP",
+						"FM",
+						"KOUI",
+						"$(",
+						"PWAV+",
+						"PTKZU+",
+						"APPO",
+						"VAPP+",
+						"PAV+",
+						"KOKOM+",
+						"ADJD+",
+						"PTKNEG+",
+						"PWAT+",
+						"NN+",
+						"KON+",
+						"PRF+",
+						"PPOSAT+",
+						"PTKA+",
+						"PDAT+",
+						"PTKVZ+"
+					],
+					"nullable": true
+				},
+				"unclear": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"0",
+						"1"
+					],
+					"nullable": false
+				},
+				"truncated": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"0",
+						"1"
+					],
+					"nullable": false
+				},
+				"vocal": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"0",
+						"1"
+					],
+					"nullable": false
+				}
+			}
+		},
+		"Segment": {
+			"abstract": false,
+			"layerType": "span",
+			"contains": "Token",
+			"attributes": {
+				"who": {
+					"ref": "who"
+				}
+			}
+		},
+		"Document": {
+			"abstract": false,
+			"contains": "Segment",
+			"layerType": "span",
+			"attributes": {
+				"id": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"1244",
+						"1205",
+						"1138",
+						"1170",
+						"1082",
+						"1083",
+						"1215",
+						"1198",
+						"1087",
+						"1228",
+						"1209",
+						"1142",
+						"1235",
+						"1270",
+						"1255",
+						"1263",
+						"1212",
+						"1259",
+						"1207",
+						"1073",
+						"1195",
+						"1121",
+						"1189",
+						"1224",
+						"1143",
+						"1147",
+						"1203",
+						"1163",
+						"1261",
+						"1295",
+						"1225",
+						"1063",
+						"1048",
+						"1248",
+						"1053",
+						"1300",
+						"1240",
+						"1188",
+						"1007",
+						"1044",
+						"1055",
+						"1075",
+						"1008"
+					],
+					"nullable": false
+				},
+				"transcriptor": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"M\u00e4chler",
+						"Aepli",
+						"Peters",
+						"Zoller",
+						"Stadler",
+						"Stadler/Aepli"
+					],
+					"nullable": true
+				},
+				"tool": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"FOLKER",
+						"Exmaralda",
+						"Nisus Writer"
+					],
+					"nullable": true
+				},
+				"transcription_phase": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"2",
+						"3",
+						"1",
+						"4"
+					],
+					"nullable": true
+				},
+				"normalisation": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"automatic",
+						"manual"
+					],
+					"nullable": true
+				},
+				"who": {
+					"ref": "who"
+				}
+			}
+		},
+		"Annotation": {
+			"abstract": false,
+			"layerType": "unit",
+			"anchoring": {
+				"location": false,
+				"stream": true,
+				"time": false
+			},
+			"attributes": {
+				"type": {
+					"isGlobal": false,
+					"type": "categorical",
+					"values": [
+						"incident",
+						"pause",
+						"gap"
+					],
+					"nullable": false
+				},
+				"meta": {
+					"reason": {
+						"type": "text"
+					},
+					"description": {
+						"type": "text"
+					}
+				}
+			}
+		}
+	},
+	"globalAttributes": {
+		"who": {
+			"type": "dict",
+			"keys": {
+				"sex": {
+					"type": "text"
+				},
+				"birth": {
+					"type": "date"
+				},
+				"occupation": {
+					"type": "text"
+				},
+				"residence": {
+					"type": "text"
+				},
+				"dialect": {
+					"type": "text"
+				}
+			}
+		}
+	}
+}

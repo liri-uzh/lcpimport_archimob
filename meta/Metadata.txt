@@ -1,0 +1,44 @@
+DocID	SpeakerID	Year of birth	Sex	Profession	Dialect area	Transcriptor	Tool	Transcription phase	Normalisation
+1007	EJos1007	1912	f	Haushaltsgehilfin	NW (Stans)	Peters	Nisus Writer	1	manual
+1008	BVin1008	1928	m	Manager (unklar)	LU (Meggen)	Aepli	Exmaralda	3	automatic
+1044	WFra1044	1913	m	Ökonom	BS (Basel)	Aepli	Exmaralda	4	automatic
+1048	WRos1048	1925	f	Hausfrau/Familienunternehmen	GL (Enneda)	Peters	Nisus Writer	1	manual
+1053	OJos1053	1932	m	Bauer	NW (Wolfenschiessen)	Aepli	Exmaralda	4	automatic
+1055	DFul1055	1925	m	Kaufm. Angestellter	ZH (Zürich)	Aepli	Exmaralda	3	automatic
+1063	HEll1063	1918	f	Schneiderin	AG (Baden)	Peters	Nisus Writer	1	manual
+1073	PRos1073	1908	f	Wirtin	BL (Gelterkinden)	Peters	Nisus Writer	1	automatic
+1075	SErh1075	1925	m	Chemikant	BS (Basel)	Peters	Nisus Writer	1	automatic
+1082	WTru1082	1929	f	Verkäuferin	ZH (Höngg/Wipkingen)	Mächler	FOLKER	2	automatic
+1083	ZHel1083	1905	f	Klavierlehrerin	ZH (Winterthur)	Mächler	FOLKER	2	automatic
+1087	AMor1087	1914	m	Chemiker	ZH (Zürich)	Mächler	FOLKER	2	automatic
+1121	SAlf1121	1925	m	Arzt	BE (Bern/Köniz)	Mächler	FOLKER	2	automatic
+1138	SEli1138	1907	f	Bäuerin	LU (Meggen)	Aepli	Exmaralda	3	automatic
+1142	BRen1142	1920	m	Konstrukteur	BE (Bern/Ittigen)	Peters	Nisus Writer	1	manual
+1143	BErn1143	1924	m	Kaufm. Angestellter	ZH (Zürich-Seebach)	Peters	Nisus Writer	1	manual
+1147	HJak1147	1915	m	Ingenieur HTL	AG (Baden)	Peters	Nisus Writer	1	automatic
+1163	DHan1163	1921	m	Kaufmännischer Angestellter	AG (Staffelbach/Gränichen)	Stadler/Aepli	Exmaralda	4	automatic
+1170	BVre1170	1918	f	Hotelière	BE (Matten b. Interlaken)	Peters	Nisus Writer	1	automatic
+1188	BRay1188	1916	m	Fabrikant	ZH/BS (Zürich/??)	Aepli	Exmaralda	3	automatic
+1189	BHan1189	1914	m	Arzt	ZH (Zürich)	Aepli	Exmaralda	3	automatic
+1195	KHan1195	1914	m	Versicherungsangesteller	LU (Sempach)	Peters	Nisus Writer	1	automatic
+1198	TJos1198	1915	m	Bauer	SG (Brütten ZH/Zuozwil)	Peters	Nisus Writer	1	manual
+1203	BHer1203	1924	m	Prokurist	BE (Erlach)	Aepli	Exmaralda	4	automatic
+1205	NThe1205	1930	m	Wirt	SH (Ramsen)	Aepli	Exmaralda	3	automatic
+1207	FKon1207	1916	m	"Maler Unternehmer"	GL (Näfels)	Peters	Nisus Writer	1	automatic
+1209	BHan1209	1926	m	Buchbinder	SZ (Schwyz)	Peters	Nisus Writer	1	automatic
+1212	MHan1212	1921	f	?	VS (Naters)	Peters	Nisus Writer	1	manual
+1215	BWer1215	1918	m	Gärtner	BE (Bern/Bangerten)	Mächler	FOLKER	2	automatic
+1224	AErn1224	1917	m	Bäcker	BS (Basel)	Aepli	Exmaralda	4	automatic
+1225	WHan1225	1917	m	Sekundarlehrer	ZH (Zürich)	Mächler	FOLKER	2	automatic
+1228	APet1228	1926	m	Soziologe	ZH (Zürich)	Zoller	Exmaralda	3	automatic
+1235	BJos1235	1927	f	Schneiderin	LU (Luteren/Wolhusen)	Aepli	Exmaralda	4	automatic
+1240	RLin1240	1928	f	?	GR (Davos/Chur/ZH-Wittikon)	Stadler	Exmaralda	4	automatic
+1244	MMax1244	1917	m	Sekundarlehrer	ZH (Wülflingen)	Mächler	FOLKER	2	automatic
+1248	VPet1248	1923	m	Jurist	AG (Baden/Brugg)	Zoller	Exmaralda	3	automatic
+1255	GAlo1255	1927	m	"Bergbauer Bähnler"	UR (Göschener Alp)	Stadler	Exmaralda	4	automatic
+1259	MEdu1259	1921	m	"Landwirt Möbelschreiner"	AG (Full-Reuenthal)	Zoller	Exmaralda	3	automatic
+1261	CBri1261	1932	f	kauf. Angestellte	LU (Luzern)	Peters	Nisus Writer	1	manual
+1263	EHan1263	1912	m	Jurist	BS (Basel)	Aepli	Exmaralda	4	automatic
+1270	MVer1270	1928	f	Verkäuferin	ZH (Wallisellen)	Peters	Nisus Writer	1	manual
+1295	CJea1295	1922	f	"Damenschneiderin K.schwester"	AG (Buchs/Zofingen)	Zoller	Exmaralda	3	automatic
+1300	FPet1300	1914	m	Oberrichter	ZH (Winterthur)	Zoller	Exmaralda	3	automatic
