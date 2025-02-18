@@ -1,11 +1,12 @@
 from json import dumps
 from lxml import etree
 from uuid import uuid4
+from collections import defaultdict
 import io
 import os
 import wave
 from tqdm import tqdm
-import shutil
+import math
 
 DOC_DB_FILE = "./meta/Metadata.txt"
 PERSON_DB_FILE = "./meta/person_file.xml"
@@ -24,6 +25,7 @@ token_id = 1
 annotation_id = 1
 document_id = 1
 audio_cursor = 1
+remainder = 0
 
 person_db: dict[str, dict] = {}
 doc_db: dict[str, dict] = {}
@@ -31,6 +33,11 @@ token_forms: dict[str, int] = {}
 token_lemmas: dict[str, int] = {}
 
 skip_doc_cols = ("Year of birth", "Sex", "Profession")
+
+
+def parse_range(range_str: str) -> tuple[int, int]:
+    return tuple(map(int, range_str.strip("[]()").split(",")))
+
 
 json_template: dict[str, dict] = {
     "meta": {
@@ -155,24 +162,36 @@ json_template: dict[str, dict] = {
 }
 
 
-def get_audio_length(filename, seconds_to_integers=True):
+def get_audio_length(filename, remainder=0):
     """
     Get the length of an audio file in frames, assuming there are 25 frames per second.
-    if `seconds_to_integers==True`, seconds get expressed as integers, otherwise as floats.
+    if `frames_to_integers==True`, seconds get expressed as integers, otherwise as floats.
     """
     with wave.open(filename, "rb") as audio:
         seconds = audio.getnframes() / audio.getframerate()
+        frames = seconds * 25
+        remainder += frames - math.floor(frames)
 
-        return int(seconds * 25) if seconds_to_integers else seconds * 25
+        if remainder >= 1:
+            frames = math.floor(frames) + 1
+            remainder -= 1
+        else:
+            frames = math.floor(frames)
+
+        return frames, remainder
 
 
-def concatenate_audio_files(folder_path, output_path):
-    """Concatenates several audio files into one audio file using Python's built-in wav module
-    and save it to `output_path`. Note that extension (wav) must be added to `output_path`
+def concatenate_audio_files(folder_path, output_path, processed_segs=[]):
+    """
+    Concatenates several audio files into one audio file using Python's built-in wav module\n
+    and save it to `output_path`. Note that extension (wav) must be added to `output_path`.\n
+    If `processed_segs` is provided, it will skip the files in the list; some docs have more audios than segments in doc.\n
     """
     audio_clip_paths = os.listdir(folder_path)
     data = []
     for clip_name in audio_clip_paths:
+        if processed_segs and clip_name not in processed_segs:
+            continue
         clip = f"{folder_path}/{clip_name}"
         if not os.path.isfile(clip):
             continue
@@ -252,6 +271,7 @@ def parse_file(input_file, doc_name):
     global annotation_id
     global person_db
     global audio_cursor
+    global remainder
 
     start_char_doc = char_cursor
     start_audio_doc = audio_cursor
@@ -261,15 +281,20 @@ def parse_file(input_file, doc_name):
     ]  # Get the name of the audio folder
     audio_doc = f"{AUDIO_FOLDER}{doc_audio_folder}"  # the whole folder corresponds to one document
 
+    audio_frame_dict = defaultdict(lambda: defaultdict(str))
+
     doc_media_name = f"{doc_audio_folder}.wav"
-    if not os.path.exists("./media"):
-        os.makedirs("./media")
-    concatenate_audio_files(audio_doc, f"./media/{doc_media_name}")
+    if not os.path.exists("./output/media"):
+        os.makedirs("./output/media")
 
     tree = etree.parse(io.BytesIO(open(input_file, "rb").read()))  # type: ignore
     root = tree.getroot()
 
     doc_title = root.xpath(f".//*[local-name()='title']")[0].text
+
+    processed_segs = []
+
+    segs_xpath = f".//*[local-name()='{SENTENCE_TAG}']"
 
     with open("./output/document.csv", "a", encoding="utf-8") as doc_output, open(
         "./output/segment.csv", "a", encoding="utf-8"
@@ -278,7 +303,9 @@ def parse_file(input_file, doc_name):
     ) as fts_output, open(
         "./output/token.csv", "a", encoding="utf-8"
     ) as tok_output:
-        for seg in root.xpath(f".//*[local-name()='{SENTENCE_TAG}']"):
+        for seg in root.xpath(
+            segs_xpath
+        ):  # TODO: sort root.xpath(segs_xpath) by audio_name
             seg_id = str(uuid4())
             token_vector = []
             start_char_seg = char_cursor
@@ -288,20 +315,21 @@ def parse_file(input_file, doc_name):
 
             # these two specific audio folders deviate from the naming convention
             if "d1082_2_TLI" in audio_name:
-                audio_name.replace("d1082_2_TLI", "1082_2d1082_2_TLI")
+                audio_name = audio_name.replace("d1082_2_TLI", "1082_2d1082_2_TLI")
             elif "d1082_3_TLI" in audio_name:
-                audio_name.replace("d1082_3_TLI", "1082_3d1082_3_TLI")
+                audio_name = audio_name.replace("d1082_3_TLI", "1082_3d1082_3_TLI")
 
             ### NOTE: if the audio file is not found, the audio length is set to 0
-            try:
-                segment_audio_length = get_audio_length(f"{audio_doc}/{audio_name}")
-            except FileNotFoundError:
+            if audio_name not in processed_segs:
+                try:
+                    segment_audio_length, remainder = get_audio_length(
+                        f"{audio_doc}/{audio_name}", remainder=remainder
+                    )
+                    processed_segs.append(audio_name)
+                except FileNotFoundError:
+                    segment_audio_length = 1
+            else:
                 segment_audio_length = 0
-
-            # Having a null length would produce empty frame ranges,
-            # which messes with SQL queries down the road
-            if segment_audio_length < 1:
-                segment_audio_length = 1
 
             audio_cursor += segment_audio_length
 
@@ -318,13 +346,6 @@ def parse_file(input_file, doc_name):
                 if tag == TOKEN_TAG or tag in NON_ANNOTATION_TAGS:
                     form = (x.text or "").strip()
                     segment_char_length += len(form)
-
-            # Calculate frame-to-character ratio for the segment
-            frame_per_char_ratio = (
-                segment_audio_length / segment_char_length
-                if segment_char_length > 0
-                else 0
-            )
 
             for x in seg.getchildren():
                 start_char_tok = char_cursor
@@ -355,11 +376,29 @@ def parse_file(input_file, doc_name):
                     token_lemmas[lemma] = lemma_id
                     char_cursor += max(len(form) - 1, 1)
 
-                    # Calculate frame length for the token
-                    token_frame_length = int(round(len(form) * frame_per_char_ratio, 0))
-                    if token_frame_length < 1:
-                        token_frame_length = 1
+                    # token_frame_length = len(form) * math.ceil(frame_per_char_ratio)
 
+                    if start_audio_tok > audio_cursor:
+                        raise ValueError(
+                            f"Audio cursor is less than start_audio_tok\n {audio_cursor} < {start_audio_tok}"
+                        )
+
+                    if audio_name not in audio_frame_dict["tokens"].keys():
+                        if start_audio_tok == audio_cursor:
+                            audio_frame_range = (
+                                f"[{start_audio_tok},{audio_cursor + 1})"
+                            )
+                        else:
+                            audio_frame_range = f"[{start_audio_tok},{audio_cursor})"
+                        audio_frame_dict["tokens"][audio_name] = audio_frame_range
+                    else:
+                        audio_frame_range = audio_frame_dict["tokens"][audio_name]
+
+                    start, end = parse_range(audio_frame_range)
+                    if start >= end:
+                        print(
+                            f"Start frame is greater than end frame for token\n {start} >= {end} for {audio_name} in document {doc_name}\nAudio frame range: {audio_frame_range}"
+                        )
                     tok_output.write(
                         "\n"
                         + "\t".join(
@@ -373,14 +412,15 @@ def parse_file(input_file, doc_name):
                                 "1" if vocal else "0",
                                 f"[{start_char_tok},{char_cursor})",
                                 seg_id,
-                                f"[{start_audio_tok},{start_audio_tok + token_frame_length})",
+                                audio_frame_range,
                             ]
                         )
                     )
-                    start_audio_tok += token_frame_length  # Update audio position
+                    start_audio_tok = audio_cursor
                     token_vector.append((form, lemma, xpos))
                     token_id += 1
                     char_cursor += 1
+
                 elif tag in ANNOTATION_TAGS:
                     with open(
                         "./output/annotation.csv", "a", encoding="utf-8"
@@ -411,11 +451,41 @@ def parse_file(input_file, doc_name):
                             ].append(tag)
                 else:
                     pass
+            start_audio_tok = audio_cursor
             who = seg.get("who").removeprefix("person_db#").strip()
             if who not in person_db:
                 person_db[who] = {}
             if char_cursor - start_char_seg < 2:
                 char_cursor += 2
+
+            if seg == root.xpath(segs_xpath)[-1]:
+                concatenate_audio_files(
+                    audio_doc, f"./output/media/{doc_media_name}", processed_segs
+                )
+                doc_frame_len, _ = get_audio_length(f"./output/media/{doc_media_name}")
+
+                if (doc_frame_len > (audio_cursor - start_audio_doc)) and (
+                    doc_frame_len - (audio_cursor - start_audio_doc) <= 50
+                ):
+                    audio_cursor = start_audio_doc + doc_frame_len
+                else:
+                    # raise ValueError(
+                    print(
+                        f"Audio cursor is too far ahead of the document frame length \n {audio_cursor - start_audio_doc} > {doc_frame_len}\nAudio frame range: {audio_frame_range}"
+                    )
+
+            if audio_name not in audio_frame_dict["segments"].keys():
+                audio_frame_range = f"[{start_audio_seg},{audio_cursor})"
+                audio_frame_dict["segments"][audio_name] = audio_frame_range
+            else:
+                audio_frame_range = audio_frame_dict["segments"][audio_name]
+
+            start, end = parse_range(audio_frame_range)
+
+            if start >= end:
+                print(
+                    f"Start frame is greater than end frame for segment\n {start} >= {end} for {audio_name} in document {doc_name}"
+                )
             seg_output.write(
                 "\n"
                 + "\t".join(
@@ -423,7 +493,7 @@ def parse_file(input_file, doc_name):
                         seg_id,
                         who,
                         f"[{start_char_seg},{char_cursor-1})",
-                        f"[{start_audio_seg},{audio_cursor})",
+                        audio_frame_range,
                         '{"audio_file": "' + audio_name + '"}',
                     ]
                 )
@@ -435,7 +505,9 @@ def parse_file(input_file, doc_name):
             fts_output.write("\n" + "\t".join([seg_id, vector]))
 
         doc_char_range = f"[{start_char_doc},{char_cursor})"
+
         doc_frame_range = f"[{start_audio_doc},{audio_cursor})"
+
         doc_output.write(
             "\n"
             + "\t".join(
@@ -473,9 +545,11 @@ def parse_file(input_file, doc_name):
 
 
 def run():
+    with open("./problematic.txt", "r") as f:
+        # temporary measure to skip problematic files
+        problematic_docs = f.read().split(",")
     load_people(PERSON_DB_FILE)
     load_docs(DOC_DB_FILE)
-
     with open("./output/document.csv", "w", encoding="utf-8") as doc_output, open(
         "./output/segment.csv", "w", encoding="utf-8"
     ) as seg_output, open(
@@ -525,12 +599,16 @@ def run():
     for file in tqdm(os.listdir(FOLDER)):
         if not file.endswith(".xml"):
             continue
+        if file in problematic_docs:
+            continue
         doc_name = file.removesuffix(".xml").split("_")[0]
-        parse_file(FOLDER + file, doc_name=doc_name)
+        try:
+            parse_file(FOLDER + file, doc_name=doc_name)
+        except Exception as e:
+            # for now it should never be triggered, as I excluded problematic files
+            print(f"Error processing file {file}: {e}")
+            continue
     write_forms_lemmas()
     write_speakers()
     with open("./output/meta.json", "w", encoding="utf-8") as json_file:
         json_file.write(dumps(json_template, indent="\t"))
-
-
-run()

@@ -5,7 +5,13 @@
 		"url": "https://doi.org/10.48656/496p-3w34",
 		"date": "2023",
 		"version": 1,
-		"corpusDescription": "The ArchiMob corpus represents German linguistic varieties spoken within the territory of Switzerland. This corpus is the first electronic resource containing long samples of transcribed text in Swiss German, intended for studying the spatial distribution of morphosyntactic features and for natural language processing."
+		"corpusDescription": "The ArchiMob corpus represents German linguistic varieties spoken within the territory of Switzerland. This corpus is the first electronic resource containing long samples of transcribed text in Swiss German, intended for studying the spatial distribution of morphosyntactic features and for natural language processing.",
+		"mediaSlots": {
+			"audio": {
+				"mediaType": "audio",
+				"isOptional": true
+			}
+		}
 	},
 	"firstClass": {
 		"document": "Document",
@@ -19,7 +25,7 @@
 			"anchoring": {
 				"location": false,
 				"stream": true,
-				"time": false
+				"time": true
 			},
 			"attributes": {
 				"form": {
@@ -36,87 +42,87 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"VVINF",
-						"PTKNEG",
-						"ADJD",
-						"KON",
-						"APPRART",
-						"NN",
-						"PPER",
-						"ADV",
-						"VAFIN",
-						"PDS",
-						"CARD",
-						"VVFIN",
-						"NE",
-						"VVPP",
 						"VMFIN",
-						"APPR",
-						"PDAT",
+						"PPER",
+						"PPOSAT",
+						"NN",
+						"VVFIN",
+						"ITJ",
+						"KOUS",
+						"VVPP",
+						"VAFIN",
 						"ART",
+						"APPRART",
+						"ADJD",
+						"CARD",
+						"KON",
+						"ADV",
+						"APPR",
+						"NE",
 						"ADJA",
 						"VAPP",
-						"PRELS",
-						"APZR",
-						"PRF",
-						"ITJ",
-						"PAV",
-						"KOUS",
 						"VMINF",
-						"PWS",
-						"PTKANT",
+						"VVINF",
+						"PRELS",
 						"PIS",
-						"PPOSAT",
-						"PTKZU",
-						"PTKVZ",
-						"PWAT",
-						"VAINF",
-						"VAFIN+",
-						"KOUS+",
 						"PIAT",
-						"ADV+",
-						"KOKOM",
-						"PTKINF",
+						"PDS",
+						"PAV",
+						"PTKNEG",
 						"VMPP",
-						"CARD+",
-						"PWAV",
+						"PTKINF",
+						"PWS",
+						"VAINF",
+						"PPOSS",
+						"PRELS+",
+						"APZR",
+						"PDAT",
 						"PTKA",
-						"XY",
+						"VAFIN+",
+						"PTKZU",
+						"KOKOM",
+						"KOUS+",
+						"VVIMP",
+						"ADV+",
+						"ART+",
+						"APPR+",
+						"PDS+",
+						"PRF",
+						"VVFIN+",
+						"PWAV+",
+						"PWAT",
+						"VMFIN+",
 						"VVIZU",
 						"KOUI+",
-						"VVFIN+",
-						"PRELS+",
-						"VMFIN+",
-						"PDS+",
-						"PIS+",
-						"ART+",
-						"PIAT+",
-						"APPR+",
+						"CARD+",
+						"PTKVZ",
+						"PTKANT",
+						"XY",
+						"PTKA+",
+						"PWAV",
 						"PPER+",
-						"TRUNC",
-						"PPOSS",
-						"ADJA+",
-						"PWS+",
-						"VVIMP",
+						"PIS+",
+						"PTKVZ+",
 						"FM",
-						"KOUI",
-						"$(",
-						"PWAV+",
-						"PTKZU+",
+						"PWS+",
+						"PPOSAT+",
 						"APPO",
+						"KOKOM+",
+						"ADJA+",
+						"PRF+",
+						"PTKZU+",
+						"$(",
+						"KOUI",
+						"NN+",
+						"TRUNC",
+						"KON+",
 						"VAPP+",
 						"PAV+",
-						"KOKOM+",
 						"ADJD+",
-						"PTKNEG+",
-						"PWAT+",
-						"NN+",
-						"KON+",
-						"PRF+",
-						"PPOSAT+",
-						"PTKA+",
+						"PIAT+",
 						"PDAT+",
-						"PTKVZ+"
+						"PTKNEG+",
+						"PWAT+"
 					],
 					"nullable": true
 				},
@@ -156,6 +162,12 @@
 			"attributes": {
 				"who": {
 					"ref": "who"
+				},
+				"meta": {
+					"audio_file": {
+						"type": "text",
+						"nullable": false
+					}
 				}
 			}
 		},
@@ -168,49 +180,41 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"1244",
-						"1205",
-						"1138",
-						"1170",
+						"1007",
+						"1048",
+						"1053",
+						"1055",
+						"1063",
+						"1073",
+						"1075",
 						"1082",
 						"1083",
-						"1215",
-						"1198",
 						"1087",
-						"1228",
-						"1209",
-						"1142",
-						"1235",
-						"1270",
-						"1255",
-						"1263",
-						"1212",
-						"1259",
-						"1207",
-						"1073",
-						"1195",
 						"1121",
-						"1189",
-						"1224",
+						"1138",
+						"1142",
 						"1143",
 						"1147",
-						"1203",
-						"1163",
-						"1261",
-						"1295",
-						"1225",
-						"1063",
-						"1048",
-						"1248",
-						"1053",
-						"1300",
-						"1240",
+						"1170",
 						"1188",
-						"1007",
-						"1044",
-						"1055",
-						"1075",
-						"1008"
+						"1198",
+						"1203",
+						"1205",
+						"1207",
+						"1209",
+						"1212",
+						"1215",
+						"1224",
+						"1225",
+						"1240",
+						"1244",
+						"1248",
+						"1255",
+						"1259",
+						"1261",
+						"1270",
+						"1295",
+						"1300"
 					],
 					"nullable": false
 				},
@@ -218,12 +222,11 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"M\u00e4chler",
-						"Aepli",
 						"Peters",
-						"Zoller",
+						"Aepli",
+						"M\u00c3\u00a4chler",
 						"Stadler",
-						"Stadler/Aepli"
+						"Zoller"
 					],
 					"nullable": true
 				},
@@ -231,9 +234,9 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"FOLKER",
+						"Nisus Writer",
 						"Exmaralda",
-						"Nisus Writer"
+						"FOLKER"
 					],
 					"nullable": true
 				},
@@ -241,10 +244,10 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"2",
-						"3",
 						"1",
-						"4"
+						"4",
+						"3",
+						"2"
 					],
 					"nullable": true
 				},
@@ -252,8 +255,8 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"automatic",
-						"manual"
+						"manual",
+						"automatic"
 					],
 					"nullable": true
 				},
@@ -275,9 +278,9 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"incident",
+						"gap",
 						"pause",
-						"gap"
+						"incident"
 					],
 					"nullable": false
 				},
@@ -311,6 +314,15 @@
 				"dialect": {
 					"type": "text"
 				}
+			}
+		}
+	},
+	"tracks": {
+		"layers": {
+			"Segment": {
+				"split": [
+					"who"
+				]
 			}
 		}
 	}
