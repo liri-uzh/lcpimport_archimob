@@ -1,53 +1,45 @@
-document_id	id	who_id	transcriptor	tool	transcription_phase	normalisation	char_range
-1	1244	MMax1244	Mächler	FOLKER	2	automatic	[1,29968)
-2	1205	NThe1205	Aepli	Exmaralda	3	automatic	[29968,106828)
-3	1138	SEli1138	Aepli	Exmaralda	3	automatic	[106828,133606)
-4	1244	MMax1244	Mächler	FOLKER	2	automatic	[133606,164526)
-5	1170	BVre1170	Peters	Nisus Writer	1	automatic	[164526,197175)
-6	1082	WTru1082	Mächler	FOLKER	2	automatic	[197175,217516)
-7	1083	ZHel1083	Mächler	FOLKER	2	automatic	[217516,240753)
-8	1215	BWer1215	Mächler	FOLKER	2	automatic	[240753,267077)
-9	1198	TJos1198	Peters	Nisus Writer	1	manual	[267077,292238)
-10	1087	AMor1087	Mächler	FOLKER	2	automatic	[292238,309922)
-11	1083	ZHel1083	Mächler	FOLKER	2	automatic	[309922,333353)
-12	1228	APet1228	Zoller	Exmaralda	3	automatic	[333353,397589)
-13	1209	BHan1209	Peters	Nisus Writer	1	automatic	[397589,442906)
-14	1198	TJos1198	Peters	Nisus Writer	1	manual	[442906,503416)
-15	1142	BRen1142	Peters	Nisus Writer	1	manual	[503416,539301)
-16	1235	BJos1235	Aepli	Exmaralda	4	automatic	[539301,570554)
-17	1270	MVer1270	Peters	Nisus Writer	1	manual	[570554,642986)
-18	1255	GAlo1255	Stadler	Exmaralda	4	automatic	[642986,685082)
-19	1263	EHan1263	Aepli	Exmaralda	4	automatic	[685082,741683)
-20	1212	MHan1212	Peters	Nisus Writer	1	manual	[741683,791721)
-21	1259	MEdu1259	Zoller	Exmaralda	3	automatic	[791721,878510)
-22	1215	BWer1215	Mächler	FOLKER	2	automatic	[878510,906949)
-23	1207	FKon1207	Peters	Nisus Writer	1	automatic	[906949,959464)
-24	1073	PRos1073	Peters	Nisus Writer	1	automatic	[959464,1027402)
-25	1195	KHan1195	Peters	Nisus Writer	1	automatic	[1027402,1070332)
-26	1082	WTru1082	Mächler	FOLKER	2	automatic	[1070332,1095444)
-27	1082	WTru1082	Mächler	FOLKER	2	automatic	[1095444,1104670)
-28	1121	SAlf1121	Mächler	FOLKER	2	automatic	[1104670,1143092)
-29	1189	BHan1189	Aepli	Exmaralda	3	automatic	[1143092,1228070)
-30	1224	AErn1224	Aepli	Exmaralda	4	automatic	[1228070,1310264)
-31	1143	BErn1143	Peters	Nisus Writer	1	manual	[1310264,1397232)
-32	1147	HJak1147	Peters	Nisus Writer	1	automatic	[1397232,1473241)
-33	1083	ZHel1083	Mächler	FOLKER	2	automatic	[1473241,1478279)
-34	1203	BHer1203	Aepli	Exmaralda	4	automatic	[1478279,1559785)
-35	1163	DHan1163	Stadler/Aepli	Exmaralda	4	automatic	[1559785,1668846)
-36	1261	CBri1261	Peters	Nisus Writer	1	manual	[1668846,1726248)
-37	1295	CJea1295	Zoller	Exmaralda	3	automatic	[1726248,1775771)
-38	1225	WHan1225	Mächler	FOLKER	2	automatic	[1775771,1819471)
-39	1063	HEll1063	Peters	Nisus Writer	1	manual	[1819471,1880535)
-40	1048	WRos1048	Peters	Nisus Writer	1	manual	[1880535,1943860)
-41	1248	VPet1248	Zoller	Exmaralda	3	automatic	[1943860,2018349)
-42	1053	OJos1053	Aepli	Exmaralda	4	automatic	[2018349,2086003)
-43	1300	FPet1300	Zoller	Exmaralda	3	automatic	[2086003,2181609)
-44	1240	RLin1240	Stadler	Exmaralda	4	automatic	[2181609,2195382)
-45	1188	BRay1188	Aepli	Exmaralda	3	automatic	[2195382,2258149)
-46	1087	AMor1087	Mächler	FOLKER	2	automatic	[2258149,2285061)
-47	1007	EJos1007	Peters	Nisus Writer	1	manual	[2285061,2330783)
-48	1215	BWer1215	Mächler	FOLKER	2	automatic	[2330783,2356659)
-49	1044	WFra1044	Aepli	Exmaralda	4	automatic	[2356659,2445291)
-50	1055	DFul1055	Aepli	Exmaralda	3	automatic	[2445291,2486917)
-51	1075	SErh1075	Peters	Nisus Writer	1	automatic	[2486917,2538564)
-52	1008	BVin1008	Aepli	Exmaralda	3	automatic	[2538564,2584554)
+document_id	name	who_id	transcriptor	tool	transcription_phase	normalisation	char_range	frame_range	media
+1	Transcription 1007	EJos1007	Peters	Nisus Writer	1	manual	[1,45716)	[1,101902)	{"audio": "1007.wav"}
+2	Transcription 1048	WRos1048	Peters	Nisus Writer	1	manual	[45716,108916)	[101902,250433)	{"audio": "1048.wav"}
+3	Transcription 1053	OJos1053	Aepli	Exmaralda	4	automatic	[108916,176485)	[250433,379068)	{"audio": "1053.wav"}
+4	Transcription 1055	DFul1055	Aepli	Exmaralda	3	automatic	[176485,217978)	[379068,469942)	{"audio": "1055.wav"}
+5	Transcription 1063	HEll1063	Peters	Nisus Writer	1	manual	[217978,279038)	[469942,611966)	{"audio": "1063.wav"}
+6	Transcription 1073	PRos1073	Peters	Nisus Writer	1	automatic	[279038,346964)	[611966,774736)	{"audio": "1073.wav"}
+7	Transcription 1075	SErh1075	Peters	Nisus Writer	1	automatic	[346964,398596)	[774736,903351)	{"audio": "1075.wav"}
+8	Transcription 1082_1	WTru1082	MÃ¤chler	FOLKER	2	automatic	[398596,407811)	[903351,927293)	{"audio": "1082_1.wav"}
+9	Transcription 1082_2	WTru1082	MÃ¤chler	FOLKER	2	automatic	[407811,432878)	[927293,994696)	{"audio": "1082_2.wav"}
+10	Transcription 1082_3	WTru1082	MÃ¤chler	FOLKER	2	automatic	[432878,453174)	[994696,1050164)	{"audio": "1082_3.wav"}
+11	Transcription 1083_1	ZHel1083	MÃ¤chler	FOLKER	2	automatic	[453174,476536)	[1050164,1117314)	{"audio": "1083_1.wav"}
+12	Transcription 1083_2	ZHel1083	MÃ¤chler	FOLKER	2	automatic	[476536,499674)	[1117314,1184340)	{"audio": "1083_2.wav"}
+13	Transcription 1083_3	ZHel1083	MÃ¤chler	FOLKER	2	automatic	[499674,504697)	[1184340,1198527)	{"audio": "1083_3.wav"}
+14	Transcription 1087_1	AMor1087	MÃ¤chler	FOLKER	2	automatic	[504697,531493)	[1198527,1265161)	{"audio": "1087_1.wav"}
+15	Transcription 1087_2	AMor1087	MÃ¤chler	FOLKER	2	automatic	[531493,549081)	[1265161,1310291)	{"audio": "1087_2.wav"}
+16	Transcription 1121	SAlf1121	MÃ¤chler	FOLKER	2	automatic	[549081,587150)	[1310291,1398849)	{"audio": "1121.wav"}
+17	Transcription 1138	SEli1138	Aepli	Exmaralda	3	automatic	[587150,613861)	[1398849,1463945)	{"audio": "1138.wav"}
+18	Transcription 1142	BRen1142	Peters	Nisus Writer	1	manual	[613861,649739)	[1463945,1544879)	{"audio": "1142.wav"}
+19	Transcription 1143	BErn1143	Peters	Nisus Writer	1	manual	[649739,736698)	[1544879,1727777)	{"audio": "1143.wav"}
+20	Transcription 1147	HJak1147	Peters	Nisus Writer	1	automatic	[736698,812676)	[1727777,1922996)	{"audio": "1147.wav"}
+21	Transcription 1170	BVre1170	Peters	Nisus Writer	1	automatic	[812676,845311)	[1922996,2012101)	{"audio": "1170.wav"}
+22	Transcription 1188	BRay1188	Aepli	Exmaralda	3	automatic	[845311,907980)	[2012101,2162033)	{"audio": "1188.wav"}
+23	Transcription 1198_1	TJos1198	Peters	Nisus Writer	1	manual	[907980,968315)	[2162033,2304680)	{"audio": "1198_1.wav"}
+24	Transcription 1198_2	TJos1198	Peters	Nisus Writer	1	manual	[968315,993437)	[2304680,2362721)	{"audio": "1198_2.wav"}
+25	Transcription 1203	BHer1203	Aepli	Exmaralda	4	automatic	[993437,1074839)	[2362721,2542310)	{"audio": "1203.wav"}
+26	Transcription 1205	NThe1205	Aepli	Exmaralda	3	automatic	[1074839,1151631)	[2542310,2691157)	{"audio": "1205.wav"}
+27	Transcription 1207	FKon1207	Peters	Nisus Writer	1	automatic	[1151631,1204141)	[2691157,2838924)	{"audio": "1207.wav"}
+28	Transcription 1209	BHan1209	Peters	Nisus Writer	1	automatic	[1204141,1249454)	[2838924,2936814)	{"audio": "1209.wav"}
+29	Transcription 1212	MHan1212	Peters	Nisus Writer	1	manual	[1249454,1299422)	[2936814,3059937)	{"audio": "1212.wav"}
+30	Transcription 1215_1	BWer1215	MÃ¤chler	FOLKER	2	automatic	[1299422,1325189)	[3059937,3127164)	{"audio": "1215_1.wav"}
+31	Transcription 1215_2	BWer1215	MÃ¤chler	FOLKER	2	automatic	[1325189,1351390)	[3127164,3194581)	{"audio": "1215_2.wav"}
+32	Transcription 1215_3	BWer1215	MÃ¤chler	FOLKER	2	automatic	[1351390,1379716)	[3194581,3265731)	{"audio": "1215_3.wav"}
+33	Transcription 1224	AErn1224	Aepli	Exmaralda	4	automatic	[1379716,1461731)	[3265731,3456994)	{"audio": "1224.wav"}
+34	Transcription 1225	WHan1225	MÃ¤chler	FOLKER	2	automatic	[1461731,1505205)	[3456994,3544396)	{"audio": "1225.wav"}
+35	Transcription 1240	RLin1240	Stadler	Exmaralda	4	automatic	[1505205,1518943)	[3544396,3582120)	{"audio": "1240.wav"}
+36	Transcription 1244_1	MMax1244	MÃ¤chler	FOLKER	2	automatic	[1518943,1549786)	[3582120,3651363)	{"audio": "1244_1.wav"}
+37	Transcription 1244_2	MMax1244	MÃ¤chler	FOLKER	2	automatic	[1549786,1579681)	[3651363,3718551)	{"audio": "1244_2.wav"}
+38	Transcription 1248	VPet1248	Zoller	Exmaralda	3	automatic	[1579681,1653558)	[3718551,3921920)	{"audio": "1248.wav"}
+39	Transcription 1255	GAlo1255	Stadler	Exmaralda	4	automatic	[1653558,1695628)	[3921920,4014209)	{"audio": "1255.wav"}
+40	Transcription 1259	MEdu1259	Zoller	Exmaralda	3	automatic	[1695628,1782362)	[4014209,4176333)	{"audio": "1259.wav"}
+41	Transcription 1261	CBri1261	Peters	Nisus Writer	1	manual	[1782362,1839755)	[4176333,4325726)	{"audio": "1261.wav"}
+42	Transcription 1270	MVer1270	Peters	Nisus Writer	1	manual	[1839755,1912172)	[4325726,4480126)	{"audio": "1270.wav"}
+43	Transcription 1295	CJea1295	Zoller	Exmaralda	3	automatic	[1912172,1961415)	[4480126,4597438)	{"audio": "1295.wav"}
+44	Transcription 1300	FPet1300	Zoller	Exmaralda	3	automatic	[1961415,2056148)	[4597438,4845071)	{"audio": "1300.wav"}
