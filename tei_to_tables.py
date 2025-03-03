@@ -187,11 +187,8 @@ def concatenate_audio_files(folder_path, output_path, processed_segs=[]):
     and save it to `output_path`. Note that extension (wav) must be added to `output_path`.\n
     If `processed_segs` is provided, it will skip the files in the list; some docs have more audios than segments in doc.\n
     """
-    audio_clip_paths = os.listdir(folder_path)
     data = []
-    for clip_name in audio_clip_paths:
-        if processed_segs and clip_name not in processed_segs:
-            continue
+    for clip_name in processed_segs:
         clip = f"{folder_path}/{clip_name}"
         if not os.path.isfile(clip):
             continue
