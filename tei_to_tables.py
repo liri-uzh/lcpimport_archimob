@@ -25,7 +25,6 @@ token_id = 1
 annotation_id = 1
 document_id = 1
 audio_cursor = 1
-remainder = 0
 
 person_db: dict[str, dict] = {}
 doc_db: dict[str, dict] = {}
@@ -90,7 +89,14 @@ json_template: dict[str, dict] = {
             "contains": "Token",
             "attributes": {
                 "who": {"ref": "who"},
-                "meta": {"audio_file": {"type": "text", "nullable": False}},
+                "meta": {
+                    "audio_file": {"type": "text", "nullable": False},
+                    "file_present": {
+                        "type": "categorical",
+                        "values": ["yes", "no"],
+                        "nullable": False,
+                    },
+                },
             },
         },
         "Document": {
@@ -162,23 +168,24 @@ json_template: dict[str, dict] = {
 }
 
 
-def get_audio_length(filename, remainder=0):
+def get_audio_length(filename):
     """
     Get the length of an audio file in frames, assuming there are 25 frames per second.
     if `frames_to_integers==True`, seconds get expressed as integers, otherwise as floats.
     """
     with wave.open(filename, "rb") as audio:
         seconds = audio.getnframes() / audio.getframerate()
-        frames = seconds * 25
-        remainder += frames - math.floor(frames)
+        # frames = seconds * 25
 
-        if remainder >= 1:
-            frames = math.floor(frames) + 1
-            remainder -= 1
-        else:
-            frames = math.floor(frames)
+        return seconds
 
-        return frames, remainder
+
+def seconds_to_frame_range(start_cursor, end_cursor):
+    start_frame = int(round(start_cursor * 25, 0))
+    end_frame = int(round(end_cursor * 25, 0))
+    if end_frame <= start_frame:
+        end_frame = start_frame + 1
+    return f"[{start_frame},{end_frame})"
 
 
 def concatenate_audio_files(folder_path, output_path, processed_segs=[]):
@@ -268,7 +275,6 @@ def parse_file(input_file, doc_name):
     global annotation_id
     global person_db
     global audio_cursor
-    global remainder
 
     start_char_doc = char_cursor
     start_audio_doc = audio_cursor
@@ -319,12 +325,10 @@ def parse_file(input_file, doc_name):
             ### NOTE: if the audio file is not found, the audio length is set to 0
             if audio_name not in processed_segs:
                 try:
-                    segment_audio_length, remainder = get_audio_length(
-                        f"{audio_doc}/{audio_name}", remainder=remainder
-                    )
+                    segment_audio_length = get_audio_length(f"{audio_doc}/{audio_name}")
                     processed_segs.append(audio_name)
                 except FileNotFoundError:
-                    segment_audio_length = 1
+                    segment_audio_length = 0
             else:
                 segment_audio_length = 0
 
@@ -381,21 +385,13 @@ def parse_file(input_file, doc_name):
                         )
 
                     if audio_name not in audio_frame_dict["tokens"].keys():
-                        if start_audio_tok == audio_cursor:
-                            audio_frame_range = (
-                                f"[{start_audio_tok},{audio_cursor + 1})"
-                            )
-                        else:
-                            audio_frame_range = f"[{start_audio_tok},{audio_cursor})"
+                        audio_frame_range = seconds_to_frame_range(
+                            start_audio_tok, audio_cursor
+                        )
                         audio_frame_dict["tokens"][audio_name] = audio_frame_range
                     else:
                         audio_frame_range = audio_frame_dict["tokens"][audio_name]
 
-                    start, end = parse_range(audio_frame_range)
-                    if start >= end:
-                        print(
-                            f"Start frame is greater than end frame for token\n {start} >= {end} for {audio_name} in document {doc_name}\nAudio frame range: {audio_frame_range}"
-                        )
                     tok_output.write(
                         "\n"
                         + "\t".join(
@@ -459,30 +455,29 @@ def parse_file(input_file, doc_name):
                 concatenate_audio_files(
                     audio_doc, f"./output/media/{doc_media_name}", processed_segs
                 )
-                doc_frame_len, _ = get_audio_length(f"./output/media/{doc_media_name}")
+                doc_frame_len = get_audio_length(f"./output/media/{doc_media_name}")
 
-                if (doc_frame_len > (audio_cursor - start_audio_doc)) and (
-                    doc_frame_len - (audio_cursor - start_audio_doc) <= 50
-                ):
-                    audio_cursor = start_audio_doc + doc_frame_len
-                else:
-                    # raise ValueError(
-                    print(
-                        f"Audio cursor is too far ahead of the document frame length \n {audio_cursor - start_audio_doc} > {doc_frame_len}\nAudio frame range: {audio_frame_range}"
-                    )
+                assert round(doc_frame_len, 0) == round(
+                    audio_cursor - start_audio_doc, 0
+                ), f"Audio length mismatch: {doc_frame_len} != {audio_cursor - start_audio_doc}"
 
             if audio_name not in audio_frame_dict["segments"].keys():
-                audio_frame_range = f"[{start_audio_seg},{audio_cursor})"
+                audio_frame_range = seconds_to_frame_range(
+                    start_audio_seg, audio_cursor
+                )
                 audio_frame_dict["segments"][audio_name] = audio_frame_range
             else:
                 audio_frame_range = audio_frame_dict["segments"][audio_name]
 
-            start, end = parse_range(audio_frame_range)
-
-            if start >= end:
-                print(
-                    f"Start frame is greater than end frame for segment\n {start} >= {end} for {audio_name} in document {doc_name}"
-                )
+            file_present = "yes" if audio_name in processed_segs else "no"
+            audio_meta_json = (
+                '{"audio_file": "'
+                + audio_name
+                + '", '
+                + '"file_present": "'
+                + file_present
+                + '"}'
+            )
             seg_output.write(
                 "\n"
                 + "\t".join(
@@ -491,7 +486,7 @@ def parse_file(input_file, doc_name):
                         who,
                         f"[{start_char_seg},{char_cursor-1})",
                         audio_frame_range,
-                        '{"audio_file": "' + audio_name + '"}',
+                        audio_meta_json,
                     ]
                 )
             )
@@ -503,7 +498,7 @@ def parse_file(input_file, doc_name):
 
         doc_char_range = f"[{start_char_doc},{char_cursor})"
 
-        doc_frame_range = f"[{start_audio_doc},{audio_cursor})"
+        doc_frame_range = seconds_to_frame_range(start_audio_doc, audio_cursor)
 
         doc_output.write(
             "\n"
@@ -596,7 +591,7 @@ def run():
     for file in tqdm(os.listdir(FOLDER)):
         if not file.endswith(".xml"):
             continue
-        if file in problematic_docs:
+        if file not in ["1007.xml", "1209.xml"]:
             continue
         doc_name = file.removesuffix(".xml").split("_")[0]
         try:
