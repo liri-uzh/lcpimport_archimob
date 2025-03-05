@@ -104,25 +104,7 @@
 						"PIS+",
 						"PTKVZ+",
 						"FM",
-						"PWS+",
-						"PPOSAT+",
-						"APPO",
-						"KOKOM+",
-						"ADJA+",
-						"PRF+",
-						"PTKZU+",
-						"$(",
-						"KOUI",
-						"NN+",
-						"TRUNC",
-						"KON+",
-						"VAPP+",
-						"PAV+",
-						"ADJD+",
-						"PIAT+",
-						"PDAT+",
-						"PTKNEG+",
-						"PWAT+"
+						"PWS+"
 					],
 					"nullable": true
 				},
@@ -167,6 +149,14 @@
 					"audio_file": {
 						"type": "text",
 						"nullable": false
+					},
+					"file_present": {
+						"type": "categorical",
+						"values": [
+							"yes",
+							"no"
+						],
+						"nullable": false
 					}
 				}
 			}
@@ -181,40 +171,7 @@
 					"type": "categorical",
 					"values": [
 						"1007",
-						"1048",
-						"1053",
-						"1055",
-						"1063",
-						"1073",
-						"1075",
-						"1082",
-						"1083",
-						"1087",
-						"1121",
-						"1138",
-						"1142",
-						"1143",
-						"1147",
-						"1170",
-						"1188",
-						"1198",
-						"1203",
-						"1205",
-						"1207",
-						"1209",
-						"1212",
-						"1215",
-						"1224",
-						"1225",
-						"1240",
-						"1244",
-						"1248",
-						"1255",
-						"1259",
-						"1261",
-						"1270",
-						"1295",
-						"1300"
+						"1209"
 					],
 					"nullable": false
 				},
@@ -222,11 +179,7 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"Peters",
-						"Aepli",
-						"M\u00c3\u00a4chler",
-						"Stadler",
-						"Zoller"
+						"Peters"
 					],
 					"nullable": true
 				},
@@ -234,9 +187,7 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"Nisus Writer",
-						"Exmaralda",
-						"FOLKER"
+						"Nisus Writer"
 					],
 					"nullable": true
 				},
@@ -244,10 +195,7 @@
 					"isGlobal": false,
 					"type": "categorical",
 					"values": [
-						"1",
-						"4",
-						"3",
-						"2"
+						"1"
 					],
 					"nullable": true
 				},
