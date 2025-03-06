@@ -6,7 +6,6 @@ import io
 import os
 import wave
 from tqdm import tqdm
-import math
 
 DOC_DB_FILE = "./meta/Metadata.txt"
 PERSON_DB_FILE = "./meta/person_file.xml"
@@ -17,12 +16,12 @@ SENTENCE_TAG = "u"
 TOKEN_TAG = "w"
 TOKEN_ATTRIBUTES = {"lemma": "normalised", "xpos": "tag"}
 
-ANNOTATION_TAGS = ("incident", "pause", "gap")
-NON_ANNOTATION_TAGS = ("vocal", "del")
+ANNOTATION_TAGS = ("incident", "pause")
+NON_ANNOTATION_TAGS = ("vocal", "del", "gap")
 
 char_cursor = 1
 token_id = 1
-annotation_id = 1
+incident_id = 1
 document_id = 1
 audio_cursor = 1
 
@@ -35,7 +34,7 @@ skip_doc_cols = ("Year of birth", "Sex", "Profession")
 
 
 def parse_range(range_str: str) -> tuple[int, int]:
-    return tuple(map(int, range_str.strip("[]()").split(",")))
+    return tuple(map(int, range_str.strip("[]()").split(",")))  # type: ignore
 
 
 json_template: dict[str, dict] = {
@@ -47,6 +46,7 @@ json_template: dict[str, dict] = {
         "version": 1,
         "corpusDescription": "The ArchiMob corpus represents German linguistic varieties spoken within the territory of Switzerland. This corpus is the first electronic resource containing long samples of transcribed text in Swiss German, intended for studying the spatial distribution of morphosyntactic features and for natural language processing.",
         "mediaSlots": {"audio": {"mediaType": "audio", "isOptional": True}},
+        "sample_query": 'Segment s\n    # Restrict the search to segments that have an audio file\n    file_present = "yes"\n    # and that were produced by a speaker of a dialect from Zurich\n    who.dialect = /ZH/\n\nIncident@s in\n    # Further restrict the search to segments that overlap (@ operator)\n    # with an annotation tagged "unintelligible"\n    reason = "unintelligible"\n\n# The segment should contain a sequence of tokens...\nsequence@s adnn\n    Token t\n        # ... that starts after the "unintelligible" annotation\n        position(t) > position(an)\n        # ... whose first token is an adjective or an adverb\n        xpos = /AD./\n    sequence 0..1 # (optional token)\n        Token\n    Token\n        # ... whose last token (i.e. second or third) is a noun\n        xpos = "NN"\n\n# Show that sequence in the context of its segment\nres => plain\n    context\n        s\n    entities\n        adnn',
     },
     "firstClass": {"document": "Document", "segment": "Segment", "token": "Token"},
     "layer": {
@@ -66,19 +66,37 @@ json_template: dict[str, dict] = {
                 "unclear": {
                     "isGlobal": False,
                     "type": "categorical",
-                    "values": ["0", "1"],
+                    "values": ["no", "yes"],
                     "nullable": False,
                 },
                 "truncated": {
                     "isGlobal": False,
                     "type": "categorical",
-                    "values": ["0", "1"],
+                    "values": ["no", "yes"],
                     "nullable": False,
                 },
                 "vocal": {
                     "isGlobal": False,
                     "type": "categorical",
-                    "values": ["0", "1"],
+                    "values": ["no", "yes"],
+                    "nullable": False,
+                },
+                "pause_before": {
+                    "isGlobal": False,
+                    "type": "categorical",
+                    "values": ["no", "yes"],
+                    "nullable": False,
+                },
+                "pause_after": {
+                    "isGlobal": False,
+                    "type": "categorical",
+                    "values": ["no", "yes"],
+                    "nullable": False,
+                },
+                "unintelligible": {
+                    "isGlobal": False,
+                    "type": "categorical",
+                    "values": ["no", "yes"],
                     "nullable": False,
                 },
             },
@@ -104,7 +122,7 @@ json_template: dict[str, dict] = {
             "contains": "Segment",
             "layerType": "span",
             "attributes": {
-                "id": {
+                "title": {
                     "isGlobal": False,
                     "type": "categorical",
                     "values": [],
@@ -137,18 +155,12 @@ json_template: dict[str, dict] = {
                 "who": {"ref": "who"},
             },
         },
-        "Annotation": {
+        "Incident": {
             "abstract": False,
             "layerType": "unit",
             "anchoring": {"location": False, "stream": True, "time": False},
             "attributes": {
-                "type": {
-                    "isGlobal": False,
-                    "type": "categorical",
-                    "values": [],
-                    "nullable": False,
-                },
-                "meta": {"reason": {"type": "text"}, "description": {"type": "text"}},
+                "meta": {"description": {"type": "text"}},
             },
         },
     },
@@ -272,7 +284,7 @@ def parse_file(input_file, doc_name):
     global char_cursor
     global token_id
     global document_id
-    global annotation_id
+    global incident_id
     global person_db
     global audio_cursor
 
@@ -336,7 +348,9 @@ def parse_file(input_file, doc_name):
 
             segment_char_length = 0  # Calculate total character length of the segment
 
-            for x in seg.getchildren():
+            seg_children = seg.getchildren()
+            # First pass: compute segment_char_length
+            for x in seg_children:
                 tag = x.tag.split("}")[-1]
                 unclear = tag == "unclear"
                 truncated = tag == "del"
@@ -345,20 +359,23 @@ def parse_file(input_file, doc_name):
                     tag = TOKEN_TAG
                     x = x.getchildren()[0]
                 if tag == TOKEN_TAG or tag in NON_ANNOTATION_TAGS:
-                    form = (x.text or "").strip()
+                    x_children = x.getchildren()
+                    form = ((x_children[0] if x_children else x).text or "").strip()
                     segment_char_length += len(form)
 
-            for x in seg.getchildren():
+            # Second pass: actually process the nodes
+            for n, x in enumerate(seg_children):
                 start_char_tok = char_cursor
                 tag = x.tag.split("}")[-1]
                 unclear = tag == "unclear"
                 truncated = tag == "del"
                 vocal = tag == "vocal"
+                x_children = x.getchildren()
                 if unclear:
                     tag = TOKEN_TAG
-                    x = x.getchildren()[0]
+                    x = x_children[0]
                 if tag == TOKEN_TAG or tag in NON_ANNOTATION_TAGS:
-                    form = (x.text or "").strip()
+                    form = ((x_children[0] if x_children else x).text or "").strip()
                     lemma = x.get(TOKEN_ATTRIBUTES["lemma"], "").strip()
                     xpos = x.get(TOKEN_ATTRIBUTES["xpos"], "").strip()
                     if (
@@ -392,6 +409,15 @@ def parse_file(input_file, doc_name):
                     else:
                         audio_frame_range = audio_frame_dict["tokens"][audio_name]
 
+                    pauseBefore = (
+                        n > 0 and seg_children[n - 1].tag.split("}")[-1] == "pause"
+                    )
+                    pauseAfter = (
+                        n + 1 < len(seg_children)
+                        and seg_children[n + 1].tag.split("}")[-1] == "pause"
+                    )
+                    unintelligible = tag == "gap"
+
                     tok_output.write(
                         "\n"
                         + "\t".join(
@@ -400,9 +426,12 @@ def parse_file(input_file, doc_name):
                                 str(form_id),
                                 str(lemma_id),
                                 str(xpos),
-                                "1" if unclear else "0",
-                                "1" if truncated else "0",
-                                "1" if vocal else "0",
+                                "yes" if unclear else "no",
+                                "yes" if truncated else "no",
+                                "yes" if vocal else "no",
+                                "yes" if pauseBefore else "no",
+                                "yes" if pauseAfter else "no",
+                                "yes" if unintelligible else "no",
                                 f"[{start_char_tok},{char_cursor})",
                                 seg_id,
                                 audio_frame_range,
@@ -415,11 +444,13 @@ def parse_file(input_file, doc_name):
                     char_cursor += 1
 
                 elif tag in ANNOTATION_TAGS:
+                    if tag != "incident":
+                        continue  # We used to have multiple types of annotation, now they're only "incidents"
                     with open(
-                        "./output/annotation.csv", "a", encoding="utf-8"
+                        "./output/incident.csv", "a", encoding="utf-8"
                     ) as ann_output:
-                        aid = str(annotation_id)
-                        annotation_id += 1
+                        aid = str(incident_id)
+                        incident_id += 1
                         meta = "{}"
                         if tag == "gap":
                             meta = '{"reason": "' + x.get("reason") + '"}'
@@ -429,19 +460,20 @@ def parse_file(input_file, doc_name):
                         ann_output.write(
                             "\n"
                             + "\t".join(
-                                [aid, tag, meta, f"[{char_cursor},{char_cursor+1})"]
+                                # [aid, tag, meta, f"[{char_cursor},{char_cursor+1})"]
+                                [aid, meta, f"[{char_cursor},{char_cursor+1})"]
                             )
                         )
                         char_cursor += 1
-                        if (
-                            tag
-                            not in json_template["layer"]["Annotation"]["attributes"][
-                                "type"
-                            ]["values"]
-                        ):
-                            json_template["layer"]["Annotation"]["attributes"]["type"][
-                                "values"
-                            ].append(tag)
+                        # if (
+                        #     tag
+                        #     not in json_template["layer"]["Incident"]["attributes"][
+                        #         "type"
+                        #     ]["values"]
+                        # ):
+                        #     json_template["layer"]["Incident"]["attributes"]["type"][
+                        #         "values"
+                        #     ].append(tag)
                 else:
                     pass
             start_audio_tok = audio_cursor
@@ -490,6 +522,7 @@ def parse_file(input_file, doc_name):
                     ]
                 )
             )
+            # TODO: include all 9 token attributes
             vector = " ".join(
                 f"'1{f}':{n} '2{l}':{n} '3{x}':{n}"
                 for n, (f, l, x) in enumerate(token_vector, start=1)
@@ -505,7 +538,8 @@ def parse_file(input_file, doc_name):
             + "\t".join(
                 [
                     str(document_id),
-                    doc_title,
+                    doc_title,  # retrieved from the <title> node
+                    doc_name,  # filename without .xml
                     *doc_db[doc_name].values(),
                     doc_char_range,
                     doc_frame_range,
@@ -522,7 +556,9 @@ def parse_file(input_file, doc_name):
             aname = attribute_name.replace("_", " ").lower()
             aname = aname[0].upper() + aname[1:]
             value = doc_db[doc_name].get(aname)
-            if attribute_name == "id":
+            if attribute_name == "title":
+                value = doc_title
+            if attribute_name == "name":
                 value = doc_name
             if (
                 value
@@ -546,13 +582,14 @@ def run():
     ) as fts_output, open(
         "./output/token.csv", "w", encoding="utf-8"
     ) as tok_output, open(
-        "./output/annotation.csv", "w", encoding="utf-8"
+        "./output/incident.csv", "w", encoding="utf-8"
     ) as ann_output:
         doc_output.write(
             "\t".join(
                 [
                     "document_id",
-                    "name",
+                    "title",  # corresponds to <title> in the document
+                    "name",  # filename without .xml
                     *[
                         ("who_id" if k == "SpeakerID" else k.replace(" ", "_").lower())
                         for k in next(x for x in doc_db.values()).keys()
@@ -577,13 +614,16 @@ def run():
                     "unclear",
                     "truncated",
                     "vocal",
+                    "pause_before",  # do not use camelCase: postgres only supports it when quoted
+                    "pause_after",  # do not use camelCase: postgres only supports it when quoted
+                    "unintelligible",
                     "char_range",
                     "segment_id",
                     "frame_range",
                 ]
             )
         )
-        ann_output.write("\t".join(["annotation_id", "type", "meta", "char_range"]))
+        ann_output.write("\t".join(["incident_id", "meta", "char_range"]))
 
     for file in tqdm(os.listdir(FOLDER)):
         if not file.endswith(".xml"):
