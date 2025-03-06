@@ -367,11 +367,11 @@ def parse_file(input_file, doc_name):
             for n, x in enumerate(seg_children):
                 start_char_tok = char_cursor
                 tag = x.tag.split("}")[-1]
-                unclear = tag == "unclear"
-                truncated = tag == "del"
-                vocal = tag == "vocal"
+                unclear = "yes" if tag == "unclear" else "no"
+                truncated = "yes" if tag == "del" else "no"
+                vocal = "yes" if tag == "vocal" else "no"
                 x_children = x.getchildren()
-                if unclear:
+                if unclear == "yes":
                     tag = TOKEN_TAG
                     x = x_children[0]
                 if tag == TOKEN_TAG or tag in NON_ANNOTATION_TAGS:
@@ -410,13 +410,19 @@ def parse_file(input_file, doc_name):
                         audio_frame_range = audio_frame_dict["tokens"][audio_name]
 
                     pauseBefore = (
-                        n > 0 and seg_children[n - 1].tag.split("}")[-1] == "pause"
+                        "yes"
+                        if (n > 0 and seg_children[n - 1].tag.split("}")[-1] == "pause")
+                        else "no"
                     )
                     pauseAfter = (
-                        n + 1 < len(seg_children)
-                        and seg_children[n + 1].tag.split("}")[-1] == "pause"
+                        "yes"
+                        if (
+                            n + 1 < len(seg_children)
+                            and seg_children[n + 1].tag.split("}")[-1] == "pause"
+                        )
+                        else "no"
                     )
-                    unintelligible = tag == "gap"
+                    unintelligible = "yes" if tag == "gap" else "no"
 
                     tok_output.write(
                         "\n"
@@ -426,12 +432,12 @@ def parse_file(input_file, doc_name):
                                 str(form_id),
                                 str(lemma_id),
                                 str(xpos),
-                                "yes" if unclear else "no",
-                                "yes" if truncated else "no",
-                                "yes" if vocal else "no",
-                                "yes" if pauseBefore else "no",
-                                "yes" if pauseAfter else "no",
-                                "yes" if unintelligible else "no",
+                                unclear,
+                                truncated,
+                                vocal,
+                                pauseBefore,
+                                pauseAfter,
+                                unintelligible,
                                 f"[{start_char_tok},{char_cursor})",
                                 seg_id,
                                 audio_frame_range,
@@ -439,7 +445,19 @@ def parse_file(input_file, doc_name):
                         )
                     )
                     start_audio_tok = audio_cursor
-                    token_vector.append((form, lemma, xpos))
+                    token_vector.append(
+                        (
+                            form,
+                            lemma,
+                            xpos,
+                            unclear,
+                            truncated,
+                            vocal,
+                            pauseBefore,
+                            pauseAfter,
+                            unintelligible,
+                        )
+                    )
                     token_id += 1
                     char_cursor += 1
 
@@ -524,8 +542,8 @@ def parse_file(input_file, doc_name):
             )
             # TODO: include all 9 token attributes
             vector = " ".join(
-                f"'1{f}':{n} '2{l}':{n} '3{x}':{n}"
-                for n, (f, l, x) in enumerate(token_vector, start=1)
+                " ".join([f"'{i}{x}':{n}" for x, i in enumerate(vector, start=1)])
+                for n, vector in enumerate(token_vector, start=1)
             )
             fts_output.write("\n" + "\t".join([seg_id, vector]))
 
