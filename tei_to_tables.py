@@ -537,9 +537,6 @@ def parse_file(input_file, doc_name):
 
 
 def run():
-    with open("./problematic.txt", "r") as f:
-        # temporary measure to skip problematic files
-        problematic_docs = f.read().split(",")
     load_people(PERSON_DB_FILE)
     load_docs(DOC_DB_FILE)
     with open("./output/document.csv", "w", encoding="utf-8") as doc_output, open(
@@ -590,8 +587,6 @@ def run():
 
     for file in tqdm(os.listdir(FOLDER)):
         if not file.endswith(".xml"):
-            continue
-        if file not in ["1007.xml", "1209.xml"]:
             continue
         doc_name = file.removesuffix(".xml").split("_")[0]
         try:
