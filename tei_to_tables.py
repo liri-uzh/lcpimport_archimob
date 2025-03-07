@@ -33,6 +33,12 @@ token_lemmas: dict[str, int] = {}
 skip_doc_cols = ("Year of birth", "Sex", "Profession")
 
 
+def esc_fts(value: str) -> str | int:
+    if isinstance(value, int):
+        return value
+    return value.replace("'", "''").replace("\\", "\\\\")
+
+
 def parse_range(range_str: str) -> tuple[int, int]:
     return tuple(map(int, range_str.strip("[]()").split(",")))  # type: ignore
 
@@ -542,7 +548,9 @@ def parse_file(input_file, doc_name):
             )
             # TODO: include all 9 token attributes
             vector = " ".join(
-                " ".join([f"'{i}{x}':{n}" for x, i in enumerate(vector, start=1)])
+                " ".join(
+                    [f"'{i}{esc_fts(x)}':{n}" for i, x in enumerate(vector, start=1)]
+                )
                 for n, vector in enumerate(token_vector, start=1)
             )
             fts_output.write("\n" + "\t".join([seg_id, vector]))
