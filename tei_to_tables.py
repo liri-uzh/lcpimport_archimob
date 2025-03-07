@@ -52,7 +52,7 @@ json_template: dict[str, dict] = {
         "version": 1,
         "corpusDescription": "The ArchiMob corpus represents German linguistic varieties spoken within the territory of Switzerland. This corpus is the first electronic resource containing long samples of transcribed text in Swiss German, intended for studying the spatial distribution of morphosyntactic features and for natural language processing.",
         "mediaSlots": {"audio": {"mediaType": "audio", "isOptional": True}},
-        "sample_query": 'Segment s\n    # Restrict the search to segments that have an audio file\n    file_present = "yes"\n    # and that were produced by a speaker of a dialect from Zurich\n    who.dialect = /ZH/\n\nIncident@s in\n    # Further restrict the search to segments that overlap (@ operator)\n    # with an annotation tagged "unintelligible"\n    reason = "unintelligible"\n\n# The segment should contain a sequence of tokens...\nsequence@s adnn\n    Token t\n        # ... that starts after the "unintelligible" annotation\n        position(t) > position(an)\n        # ... whose first token is an adjective or an adverb\n        xpos = /AD./\n    sequence 0..1 # (optional token)\n        Token\n    Token\n        # ... whose last token (i.e. second or third) is a noun\n        xpos = "NN"\n\n# Show that sequence in the context of its segment\nres => plain\n    context\n        s\n    entities\n        adnn',
+        "sample_query": 'Segment s\n    # Restrict the search to segments that have an audio file\n    file_present = "yes"\n\nIncident@s i\n    # The segment should overlap (operator @) with an incident\n    # whose description contains "auf den"\n    description = /auf den/\n\n# The segment should contain a sequence of 2 tokens\nsequence@s npause\n    Token\n        # The first token in the sequence should be a noun\n        xpos = "NN"\n    Token\n        # The next token should be preceded by a pause\n        pause_before = "yes"\n\n# Show that sequence in the context of its segment\nres => plain\n    context\n        s\n    entities\n        npause\n\n# Show which dialects the speakers of the hits use\nstats => analysis\n    attributes\n        s.who.dialect\n    functions\n        frequency',
     },
     "firstClass": {"document": "Document", "segment": "Segment", "token": "Token"},
     "layer": {
@@ -163,6 +163,7 @@ json_template: dict[str, dict] = {
         },
         "Incident": {
             "abstract": False,
+            "contains": "Token",  # Not exactly true, but will make it appear in the details tab
             "layerType": "unit",
             "anchoring": {"location": False, "stream": True, "time": False},
             "attributes": {
@@ -488,7 +489,7 @@ def parse_file(input_file, doc_name):
                                 [aid, meta, f"[{char_cursor},{char_cursor+1})"]
                             )
                         )
-                        char_cursor += 1
+                        # char_cursor += 1
                         # if (
                         #     tag
                         #     not in json_template["layer"]["Incident"]["attributes"][
