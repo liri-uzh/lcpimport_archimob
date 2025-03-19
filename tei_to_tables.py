@@ -1,55 +1,23 @@
-from json import dumps
-from lxml import etree
-from uuid import uuid4
-from collections import defaultdict
+import csv
 import io
 import os
 import wave
+
+from collections import defaultdict
+from json import dumps
+from lxml import etree
 from tqdm import tqdm
-
-DOC_DB_FILE = "./meta/Metadata.txt"
-PERSON_DB_FILE = "./meta/person_file.xml"
-FOLDER = "./docs/"
-AUDIO_FOLDER = "./audio/"
-
-SENTENCE_TAG = "u"
-TOKEN_TAG = "w"
-TOKEN_ATTRIBUTES = {"lemma": "normalised", "xpos": "tag"}
-
-ANNOTATION_TAGS = ("incident", "pause")
-NON_ANNOTATION_TAGS = ("vocal", "del", "gap")
-
-char_cursor = 1
-token_id = 1
-incident_id = 1
-document_id = 1
-audio_cursor = 1
-
-person_db: dict[str, dict] = {}
-doc_db: dict[str, dict] = {}
-token_forms: dict[str, int] = {}
-token_lemmas: dict[str, int] = {}
-
-skip_doc_cols = ("Year of birth", "Sex", "Profession")
-
-
-def esc_fts(value: str) -> str | int:
-    if isinstance(value, int):
-        return value
-    return value.replace("'", "''").replace("\\", "\\\\")
-
-
-def parse_range(range_str: str) -> tuple[int, int]:
-    return tuple(map(int, range_str.strip("[]()").split(",")))  # type: ignore
-
+from uuid import uuid4
 
 json_template: dict[str, dict] = {
     "meta": {
         "name": "ArchiMob Release 2 (2019) (Version 1.0.0)",
-        "author": "Scherrer, Y., Samardzic, T., & Glaser, E.",
+        "authors": "Scherrer, Y., Samardzic, T., & Glaser, E.",
         "url": "https://doi.org/10.48656/496p-3w34",
         "date": "2023",
         "version": 1,
+        "revision": "1.0",
+        "license": "cc-by-nc-sa",
         "corpusDescription": "The ArchiMob corpus represents German linguistic varieties spoken within the territory of Switzerland. This corpus is the first electronic resource containing long samples of transcribed text in Swiss German, intended for studying the spatial distribution of morphosyntactic features and for natural language processing.",
         "mediaSlots": {"audio": {"mediaType": "audio", "isOptional": True}},
         "sample_query": 'Segment s\n    # Restrict the search to segments that have an audio file\n    file_present = "yes"\n\nIncident@s i\n    # The segment should overlap (operator @) with an incident\n    # whose description contains "auf den"\n    description = /auf den/\n\n# The segment should contain a sequence of 2 tokens\nsequence@s npause\n    Token\n        # The first token in the sequence should be a noun\n        xpos = "NN"\n    Token\n        # The next token should be preceded by a pause\n        pause_before = "yes"\n\n# Show that sequence in the context of its segment\nres => plain\n    context\n        s\n    entities\n        npause\n\n# Show which dialects the speakers of the hits use\nstats => analysis\n    attributes\n        s.who.dialect\n    functions\n        frequency',
@@ -186,6 +154,45 @@ json_template: dict[str, dict] = {
     "tracks": {"layers": {"Segment": {"split": ["who"]}}},
 }
 
+DOC_DB_FILE = "./meta/Metadata.txt"
+PERSON_DB_FILE = "./meta/person_file.xml"
+FOLDER = "./docs/"
+AUDIO_FOLDER = "./audio/"
+
+SENTENCE_TAG = "u"
+TOKEN_TAG = "w"
+TOKEN_ATTRIBUTES = {"lemma": "normalised", "xpos": "tag"}
+
+ANNOTATION_TAGS = ("incident", "pause")
+NON_ANNOTATION_TAGS = ("vocal", "del", "gap")
+
+char_cursor = 1
+token_id = 1
+incident_id = 1
+document_id = 1
+audio_cursor = 1
+
+person_db: dict[str, dict] = {}
+doc_db: dict[str, dict] = {}
+token_forms: dict[str, int] = {}
+token_lemmas: dict[str, int] = {}
+
+skip_doc_cols = ("Year of birth", "Sex", "Profession")
+
+
+def esc_fts(value: str) -> str | int:
+    if isinstance(value, int):
+        return value
+    return value.replace("'", "''").replace("\\", "\\\\")
+
+
+def parse_range(range_str: str) -> tuple[int, int]:
+    return tuple(map(int, range_str.strip("[]()").split(",")))  # type: ignore
+
+
+def to_range(lower: str | int, upper: str | int) -> str:
+    return f"[{str(lower)},{str(upper)})"
+
 
 def get_audio_length(filename):
     """
@@ -204,7 +211,7 @@ def seconds_to_frame_range(start_cursor, end_cursor):
     end_frame = int(round(end_cursor * 25, 0))
     if end_frame <= start_frame:
         end_frame = start_frame + 1
-    return f"[{start_frame},{end_frame})"
+    return to_range(start_frame, end_frame)
 
 
 def concatenate_audio_files(folder_path, output_path, processed_segs=[]):
@@ -231,8 +238,8 @@ def concatenate_audio_files(folder_path, output_path, processed_segs=[]):
 def load_docs(input_file):
     header = []
     with open(input_file, "r") as metadata:
-        while line := metadata.readline():
-            values = [x.strip() for x in line.split("\t")]
+        reader = csv.reader(metadata, delimiter="\t")
+        for values in reader:
             if not header:
                 header = values
                 continue
@@ -262,28 +269,23 @@ def write_forms_lemmas():
     with open("./output/token_form.csv", "w", encoding="utf-8") as forms, open(
         "./output/token_lemma.csv", "w", encoding="utf-8"
     ) as lemmas:
-        forms.write("\t".join(["form_id", "form"]))
-        lemmas.write("\t".join(["lemma_id", "lemma"]))
+        forms_csv = csv.writer(forms)
+        lemmas_csv = csv.writer(lemmas)
+        forms_csv.writerow(["form_id", "form"])
+        lemmas_csv.writerow(["lemma_id", "lemma"])
         for form, i in token_forms.items():
-            forms.write("\n" + "\t".join([str(i), form]))
+            forms_csv.writerow([str(i), form])
         for lemma, i in token_lemmas.items():
-            lemmas.write("\n" + "\t".join([str(i), lemma]))
+            lemmas_csv.writerow([str(i), lemma])
 
 
 def write_speakers():
     header = ["who_id", "who"]
     with open("./output/global_attribute_who.csv", "w", encoding="utf-8") as speakers:
-        speakers.write("\t".join(header))
+        speakers_csv = csv.writer(speakers)
+        speakers_csv.writerow(header)
         for speaker_id, props in person_db.items():
-            json_string = (
-                "{"
-                + ",".join(
-                    f'"{prop_name}": "{prop_value}"'
-                    for prop_name, prop_value in props.items()
-                )
-                + "}"
-            )
-            speakers.write("\n" + "\t".join([speaker_id, json_string]))
+            speakers_csv.writerow([speaker_id, dumps(props)])
 
 
 def parse_file(input_file, doc_name):
@@ -325,6 +327,12 @@ def parse_file(input_file, doc_name):
     ) as fts_output, open(
         "./output/token.csv", "a", encoding="utf-8"
     ) as tok_output:
+
+        doc_csv = csv.writer(doc_output)
+        seg_csv = csv.writer(seg_output)
+        fts_csv = csv.writer(fts_output)
+        tok_csv = csv.writer(tok_output)
+
         for seg in root.xpath(
             segs_xpath
         ):  # TODO: sort root.xpath(segs_xpath) by audio_name
@@ -431,25 +439,22 @@ def parse_file(input_file, doc_name):
                     )
                     unintelligible = "yes" if tag == "gap" else "no"
 
-                    tok_output.write(
-                        "\n"
-                        + "\t".join(
-                            [
-                                str(token_id),
-                                str(form_id),
-                                str(lemma_id),
-                                str(xpos),
-                                unclear,
-                                truncated,
-                                vocal,
-                                pauseBefore,
-                                pauseAfter,
-                                unintelligible,
-                                f"[{start_char_tok},{char_cursor})",
-                                seg_id,
-                                audio_frame_range,
-                            ]
-                        )
+                    tok_csv.writerow(
+                        [
+                            token_id,
+                            form_id,
+                            lemma_id,
+                            xpos,
+                            unclear,
+                            truncated,
+                            vocal,
+                            pauseBefore,
+                            pauseAfter,
+                            unintelligible,
+                            to_range(start_char_tok, char_cursor),
+                            seg_id,
+                            audio_frame_range,
+                        ]
                     )
                     start_audio_tok = audio_cursor
                     token_vector.append(
@@ -482,23 +487,9 @@ def parse_file(input_file, doc_name):
                         if tag == "incident":
                             desc = x.xpath(".//*[local-name()='desc']")[0]
                             meta = '{"description": "' + desc.text + '"}'
-                        ann_output.write(
-                            "\n"
-                            + "\t".join(
-                                # [aid, tag, meta, f"[{char_cursor},{char_cursor+1})"]
-                                [aid, meta, f"[{char_cursor},{char_cursor+1})"]
-                            )
+                        csv.writer(ann_output).writerow(
+                            [aid, meta, to_range(char_cursor, char_cursor + 1)]
                         )
-                        # char_cursor += 1
-                        # if (
-                        #     tag
-                        #     not in json_template["layer"]["Incident"]["attributes"][
-                        #         "type"
-                        #     ]["values"]
-                        # ):
-                        #     json_template["layer"]["Incident"]["attributes"]["type"][
-                        #         "values"
-                        #     ].append(tag)
                 else:
                     pass
             start_audio_tok = audio_cursor
@@ -535,17 +526,14 @@ def parse_file(input_file, doc_name):
                 + file_present
                 + '"}'
             )
-            seg_output.write(
-                "\n"
-                + "\t".join(
-                    [
-                        seg_id,
-                        who,
-                        f"[{start_char_seg},{char_cursor-1})",
-                        audio_frame_range,
-                        audio_meta_json,
-                    ]
-                )
+            seg_csv.writerow(
+                [
+                    seg_id,
+                    who,
+                    to_range(start_char_seg, char_cursor - 1),
+                    audio_frame_range,
+                    audio_meta_json,
+                ]
             )
             # TODO: include all 9 token attributes
             vector = " ".join(
@@ -554,25 +542,22 @@ def parse_file(input_file, doc_name):
                 )
                 for n, vector in enumerate(token_vector, start=1)
             )
-            fts_output.write("\n" + "\t".join([seg_id, vector]))
+            fts_csv.writerow([seg_id, vector])
 
-        doc_char_range = f"[{start_char_doc},{char_cursor})"
+        doc_char_range = to_range(start_char_doc, char_cursor)
 
         doc_frame_range = seconds_to_frame_range(start_audio_doc, audio_cursor)
 
-        doc_output.write(
-            "\n"
-            + "\t".join(
-                [
-                    str(document_id),
-                    doc_title,  # retrieved from the <title> node
-                    doc_name,  # filename without .xml
-                    *doc_db[doc_name].values(),
-                    doc_char_range,
-                    doc_frame_range,
-                    '{"audio": "' + doc_media_name + '"}',
-                ]
-            )
+        doc_csv.writerow(
+            [
+                document_id,
+                doc_title,  # retrieved from the <title> node
+                doc_name,  # filename without .xml
+                *doc_db[doc_name].values(),
+                doc_char_range,
+                doc_frame_range,
+                '{"audio": "' + doc_media_name + '"}',
+            ]
         )
         document_id += 1
         for attribute_name, attribute_props in json_template["layer"]["Document"][
@@ -611,46 +596,47 @@ def run():
     ) as tok_output, open(
         "./output/incident.csv", "w", encoding="utf-8"
     ) as ann_output:
-        doc_output.write(
-            "\t".join(
-                [
-                    "document_id",
-                    "title",  # corresponds to <title> in the document
-                    "name",  # filename without .xml
-                    *[
-                        ("who_id" if k == "SpeakerID" else k.replace(" ", "_").lower())
-                        for k in next(x for x in doc_db.values()).keys()
-                    ],
-                    "char_range",
-                    "frame_range",
-                    "media",
-                ]
-            )
+
+        doc_csv = csv.writer(doc_output)
+        seg_csv = csv.writer(seg_output)
+        fts_csv = csv.writer(fts_output)
+        tok_csv = csv.writer(tok_output)
+        ann_csv = csv.writer(ann_output)
+
+        doc_csv.writerow(
+            [
+                "document_id",
+                "title",  # corresponds to <title> in the document
+                "name",  # filename without .xml
+                *[
+                    ("who_id" if k == "SpeakerID" else k.replace(" ", "_").lower())
+                    for k in next(x for x in doc_db.values()).keys()
+                ],
+                "char_range",
+                "frame_range",
+                "media",
+            ]
         )
-        seg_output.write(
-            "\t".join(["segment_id", "who_id", "char_range", "frame_range", "meta"])
+        seg_csv.writerow(["segment_id", "who_id", "char_range", "frame_range", "meta"])
+        fts_csv.writerow(["segment_id", "vector"])
+        tok_csv.writerow(
+            [
+                "token_id",
+                "form_id",
+                "lemma_id",
+                "xpos",
+                "unclear",
+                "truncated",
+                "vocal",
+                "pause_before",  # do not use camelCase: postgres only supports it when quoted
+                "pause_after",  # do not use camelCase: postgres only supports it when quoted
+                "unintelligible",
+                "char_range",
+                "segment_id",
+                "frame_range",
+            ]
         )
-        fts_output.write("\t".join(["segment_id", "vector"]))
-        tok_output.write(
-            "\t".join(
-                [
-                    "token_id",
-                    "form_id",
-                    "lemma_id",
-                    "xpos",
-                    "unclear",
-                    "truncated",
-                    "vocal",
-                    "pause_before",  # do not use camelCase: postgres only supports it when quoted
-                    "pause_after",  # do not use camelCase: postgres only supports it when quoted
-                    "unintelligible",
-                    "char_range",
-                    "segment_id",
-                    "frame_range",
-                ]
-            )
-        )
-        ann_output.write("\t".join(["incident_id", "meta", "char_range"]))
+        ann_csv.writerow(["incident_id", "meta", "char_range"])
 
     for file in tqdm(os.listdir(FOLDER)):
         if not file.endswith(".xml"):
